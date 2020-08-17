@@ -1,4 +1,4 @@
-use cig::{rsx, Node};
+use cig::{rsx, Events, Node};
 
 #[test]
 fn parse_block_children() {
@@ -50,7 +50,7 @@ fn child_attribute() {
                                 .iter()
                                 .map(|x| {
                                     rsx!(<node>
-                                            <children data={x}></children>
+                                            <children default={"default"} data={x}></children>
                                         </node>)
                                 })
                                 .collect::<Vec<Node>>()
@@ -66,4 +66,10 @@ fn child_attribute() {
         *node.children[0].children[1].get_attribute("data").unwrap(),
         "test2".to_string()
     );
+}
+
+#[test]
+fn event_handlers() {
+    let click = || println!("{:?}", "data");
+    rsx!(<test OnClick={ click } OnHover={click} data1={"test"} data2={"test2"}></test>);
 }

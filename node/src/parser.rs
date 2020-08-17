@@ -6,16 +6,10 @@ use syn::{
     token, Error, Expr, Ident, Token,
 };
 
-pub type EventType = Box<dyn Fn() -> Result<()>>;
 #[derive(Clone)]
 pub enum NodeChild {
     Node(RawNode),
     Block(Expr),
-}
-
-pub enum Actions {
-    OnClick(EventType),
-    OnHover(EventType),
 }
 
 #[derive(Clone)]
@@ -129,12 +123,10 @@ impl ToTokens for NodeChild {
 
                 tokens.extend(quote! {
                     {
-                        use std::collections::HashMap;
                         let children: Vec<Node> = vec!(#(#children),*);
+                        let mut node = Node::new(#tag.clone(), children);
 
-                        let mut node = Node::new(#tag.clone(), children, HashMap::new());
-                        
-                        #(#attributes),*
+                        #(#attributes)*
 
                         vec![node]
                     }
@@ -165,13 +157,11 @@ impl ToTokens for RawNode {
         } = self;
 
         tokens.extend(quote! { {
-            use std::collections::HashMap;
             let children: Vec<Vec<Node>> = vec!(#(#children),*);
+            let mut node = Node::new(#tag.clone(), children.into_iter().flatten().collect());
 
-            let mut node = Node::new(#tag.clone(), children.into_iter().flatten().collect(), HashMap::new());
+            #(#attributes)*
 
-            #(#attributes),*
-   
            node
         }});
     }
@@ -180,10 +170,24 @@ impl ToTokens for RawNode {
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let Attribute { key, value } = self;
-
-        tokens.extend(quote! {
-            node.set_attribute(#key.to_string(), #value.to_string());
-        });
+        let action: &str = key;
+        match action {
+            "OnClick" => {
+                tokens.extend(quote! {
+                    node.set_action(Events::OnClick(Box::new(#value)));
+                });
+            }
+            "OnHover" => {
+                tokens.extend(quote! {
+                    node.set_action(Events::OnHover(Box::new(#value)));
+                });
+            }
+            _ => {
+                tokens.extend(quote! {
+                    node.set_attribute(#key.to_string(), #value.to_string());
+                });
+            }
+        };
     }
 }
 
