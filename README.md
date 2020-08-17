@@ -1,4 +1,4 @@
-#JSX parser in Rust
+## JSX parser in Rust
 
 
 Simple and light JSX like syntax parser, written in Rust.
