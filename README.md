@@ -1,7 +1,7 @@
 ## JSX parser in Rust
 
 
-Simple and light JSX like syntax parser, written in Rust.
+Simple and light JSX like syntax parser, written in Rust, building this as macro coding experiment.
 
 Spews out `Node` struct with children and attributes attached.
 
