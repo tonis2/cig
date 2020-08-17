@@ -10,7 +10,7 @@ Spews out `Node` struct with children and attributes attached.
 * Examples 
 
 ```Rust
- let node: Node = rsx!(<test data={"entry"}></test>);
+let node: Node = rsx!(<test data={"entry"}></test>);
 
 ```
 
