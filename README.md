@@ -14,13 +14,6 @@ use cig::{rsx, Node};
 
 let node: Node = rsx!(<test data={"entry"}></test>);
 
-```
-
-
-
-```Rust
-use cig::{rsx, Node};
-
 let node: Node = rsx!(<test data={"entry"}>
                         {
                             ["test", "test2"]
@@ -33,5 +26,10 @@ let node: Node = rsx!(<test data={"entry"}>
                             .collect::<Vec<Node>>()
                         }
                         </test>);
+                        
+                        
+                        
+let click = || println!("{:?}", "data");                        
+let node = rsx!(<test OnClick={ click } OnHover={click} data1={"test"} data2={"test2"}></test>);                        
 
 ```
