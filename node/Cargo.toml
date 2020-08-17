@@ -1,0 +1,13 @@
+[package]
+name = "node"
+version = "0.0.1"
+authors = ["tonis"]
+edition = "2018"
+publish = false
+
+[lib]
+
+[dependencies]
+syn = { version = "1.0.38", features = ["full"] }
+proc-macro2 = { version = "1.0.19", features = ["nightly"] }
+quote = "1.0.7"

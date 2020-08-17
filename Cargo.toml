@@ -1,0 +1,19 @@
+[package]
+name = "cig"
+version = "0.0.0"
+authors = ["tonis"]
+edition = "2018"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[workspace]
+members = [
+    "macros",
+    "node"
+]
+
+[dependencies]
+macros = { version = "0.0.1", path = "macros" }
+node = { version = "0.0.1", path = "node" }
