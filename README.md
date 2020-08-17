@@ -10,6 +10,8 @@ Spews out `Node` struct with children and attributes attached.
 * Examples 
 
 ```Rust
+use cig::{rsx, Node};
+
 let node: Node = rsx!(<test data={"entry"}></test>);
 
 ```
@@ -17,6 +19,8 @@ let node: Node = rsx!(<test data={"entry"}></test>);
 
 
 ```Rust
+use cig::{rsx, Node};
+
 let node: Node = rsx!(<test data={"entry"}>
                         {
                             ["test", "test2"]
