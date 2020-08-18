@@ -11,19 +11,23 @@ pub struct Node {
     pub tag: String,
     pub children: Vec<Node>,
     attributes: HashMap<String, String>,
-    actions: Vec<Events>,
+    events: Vec<Events>,
     dirty: bool,
 }
 
 impl Node {
-    pub fn new<T: Into<String>>(tag: T, children: Vec<Node>) -> Self {
+    pub fn new<T: Into<String>>(tag: T) -> Self {
         Self {
             tag: tag.into(),
-            children,
+            children: Vec::new(),
             attributes: HashMap::new(),
-            actions: Vec::new(),
+            events: Vec::new(),
             dirty: false,
         }
+    }
+
+    pub fn append(&mut self, child: Node) {
+        self.children.push(child);
     }
 
     pub fn get_attribute(&self, key: &str) -> Option<&String> {
@@ -35,8 +39,12 @@ impl Node {
         self.dirty = true;
     }
 
-    pub fn set_action(&mut self, action: Events) {
-        self.actions.push(action);
+    pub fn set_event(&mut self, action: Events) {
+        self.events.push(action);
+    }
+
+    pub fn events(&self) -> &Vec<Events> {
+        &self.events
     }
 }
 

@@ -1,7 +1,19 @@
-use cig::{rsx, Events, Node};
+use cig::{rsx, Node};
 
 fn main() {
-    let click = || println!("{:?}", "data");
-    let node = rsx!(<test OnClick={ click } OnHover={click} data1={"test"} data2={"test2"}></test>);
+    let node: Node = rsx!(<container data={"entry"}>
+                            {
+                                ["test", "test2"]
+                                .iter()
+                                .map(|x| {
+                                    rsx!(<node>
+                                            <children data={x}/>
+                                            <image/>
+                                            <text/>
+                                        </node>)
+                                })
+                                .collect::<Vec<Node>>()
+                            }
+                            </container>);
     println!("{:?}", node);
 }

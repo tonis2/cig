@@ -40,35 +40,34 @@ impl RawNode {
         tokens.parse::<Token![<]>()?;
         node.tag = tokens.parse::<Ident>()?.to_string();
 
-        if !RawNode::is_tag_ending(tokens) {
-            node.get_attributes(tokens)?;
-        } else {
-            tokens.parse::<Token![>]>()?;
-        }
+        let self_closed = node
+            .get_attributes(tokens)
+            .and_then(|_| node.end_tag(tokens))?;
 
-        if !RawNode::is_node_ending(tokens) {
-            loop {
-                if RawNode::is_node_ending(tokens) {
-                    break;
-                }
-                if tokens.peek(token::Brace) {
-                    let child = get_block(tokens)?;
-                    node.children.push(NodeChild::Block(child));
-                } else {
-                    let child = RawNode::get_node(tokens)?;
-                    node.children.push(NodeChild::Node(child));
-                }
+        loop {
+            if node.is_node_over(tokens) || self_closed {
+                break;
+            };
+
+            if tokens.peek(token::Brace) {
+                let child = get_block(tokens)?;
+                node.children.push(NodeChild::Block(child));
+            } else {
+                let child = RawNode::get_node(tokens)?;
+                node.children.push(NodeChild::Node(child));
             }
         }
 
-        node.end_node(tokens)?;
+        if !self_closed {
+            node.end_node(tokens)?;
+        }
+
         Ok(node)
     }
 
-    fn get_attributes(&mut self, tokens: ParseStream) -> Result<()> {
+    fn get_attributes(&mut self, tokens: ParseStream) -> Result<bool> {
         loop {
             if RawNode::is_tag_ending(tokens) {
-                tokens.parse::<Token![>]>()?;
                 break;
             };
 
@@ -81,15 +80,27 @@ impl RawNode {
                 ));
             };
         }
-        Ok(())
+        Ok(false)
     }
 
-    fn is_node_ending(tokens: ParseStream) -> bool {
+    fn is_node_over(&self, tokens: ParseStream) -> bool {
         tokens.peek(Token![<]) && tokens.peek2(Token![/])
     }
 
     fn is_tag_ending(tokens: ParseStream) -> bool {
-        tokens.peek(Token![>])
+        (tokens.peek(Token![/]) && tokens.peek2(Token![>])) || tokens.peek(Token![>])
+    }
+
+    fn end_tag(&self, tokens: ParseStream) -> Result<bool> {
+        //Return true if self closed node <node/>
+        if tokens.peek(Token![/]) {
+            tokens.parse::<Token![/]>()?;
+            tokens.parse::<Token![>]>()?;
+            Ok(true)
+        } else {
+            tokens.parse::<Token![>]>()?;
+            return Ok(false);
+        }
     }
 
     fn end_node(&mut self, tokens: ParseStream) -> Result<()> {
@@ -111,6 +122,13 @@ impl RawNode {
     }
 }
 
+fn get_block(tokens: ParseStream) -> Result<Expr> {
+    let buffer;
+    braced!(buffer in tokens);
+
+    Ok(buffer.parse::<Expr>()?)
+}
+
 impl ToTokens for NodeChild {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match &self {
@@ -120,27 +138,26 @@ impl ToTokens for NodeChild {
                     children,
                     attributes,
                 } = node;
-
+                //Todo broken here
                 tokens.extend(quote! {
                     {
-                        let children: Vec<Node> = vec!(#(#children),*);
-                        let mut node = Node::new(#tag.clone(), children);
+                        let child_node = {
+                            let mut node = Node::new(#tag.clone());
+                                #(#children)*
+                                #(#attributes)*
+                                node
+                        };
 
-                        #(#attributes)*
-
-                        vec![node]
+                        node.append(child_node);
                     }
                 });
             }
             NodeChild::Block(expr) => {
                 tokens.extend(quote! {
                    {
-                       let mut response: Vec<Node> = Vec::new();
-                       for value in #expr {
-                           response.push(value)
+                       for child in #expr {
+                           node.append(child);
                        };
-
-                       response
                    }
                 });
             }
@@ -157,9 +174,9 @@ impl ToTokens for RawNode {
         } = self;
 
         tokens.extend(quote! { {
-            let children: Vec<Vec<Node>> = vec!(#(#children),*);
-            let mut node = Node::new(#tag.clone(), children.into_iter().flatten().collect());
+            let mut node: Node = Node::new(#tag.clone());
 
+            #(#children)*
             #(#attributes)*
 
            node
@@ -172,14 +189,14 @@ impl ToTokens for Attribute {
         let Attribute { key, value } = self;
         let action: &str = key;
         match action {
-            "OnClick" => {
+            "onClick" => {
                 tokens.extend(quote! {
-                    node.set_action(Events::OnClick(Box::new(#value)));
+                    node.set_event(Events::OnClick(Box::new(#value)));
                 });
             }
-            "OnHover" => {
+            "onHover" => {
                 tokens.extend(quote! {
-                    node.set_action(Events::OnHover(Box::new(#value)));
+                    node.set_event(Events::OnHover(Box::new(#value)));
                 });
             }
             _ => {
@@ -209,9 +226,29 @@ impl Parse for Attribute {
     }
 }
 
-fn get_block(tokens: ParseStream) -> Result<Expr> {
-    let buffer;
-    braced!(buffer in tokens);
+// Debugging only
 
-    Ok(buffer.parse::<Expr>()?)
+impl std::fmt::Debug for Attribute {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(fmt, "{{ key: {:?} }}", self.key)
+    }
+}
+
+impl std::fmt::Debug for RawNode {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(
+            fmt,
+            "Node {{ tag: {:?}, children: {:?}, attributes: {:?} }}",
+            self.tag, self.children, self.attributes
+        )
+    }
+}
+
+impl std::fmt::Debug for NodeChild {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        match self {
+            NodeChild::Node(node) => write!(fmt, " Node {{ node: {:?} }}", node),
+            NodeChild::Block(_expr) => write!(fmt, ""),
+        }
+    }
 }
