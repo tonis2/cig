@@ -1,5 +1,7 @@
 use quote::ToTokens;
-use node::RawNode;
+mod parser;
+
+use parser::RawNode;
 
 #[proc_macro]
 pub fn rsx(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
