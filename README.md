@@ -1,7 +1,7 @@
 ## JSX parser in Rust
 
 
-Simple and light JSX like syntax parser, written in Rust.
+Simple and light JSX like syntax parser, written in Rust, building this as macro coding experiment.
 
 Spews out `Node` struct with children and attributes attached.
 
@@ -14,14 +14,7 @@ use cig::{rsx, Node};
 
 let node: Node = rsx!(<test data={"entry"}></test>);
 
-```
-
-
-
-```Rust
-use cig::{rsx, Node};
-
-let node: Node = rsx!(<container data={"entry"}>
+let node: Node = rsx!(<test data={"entry"}>
                         {
                             ["test", "test2"]
                             .iter()
@@ -34,6 +27,11 @@ let node: Node = rsx!(<container data={"entry"}>
                             })
                             .collect::<Vec<Node>>()
                         }
-                        </container>);
+                        </test>);
+                        
+                        
+                        
+let click = || println!("{:?}", "data");                        
+let node = rsx!(<test OnClick={ click } OnHover={click} data1={"test"} data2={"test2"}></test>);                        
 
 ```
