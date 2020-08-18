@@ -138,7 +138,7 @@ impl ToTokens for NodeChild {
                     children,
                     attributes,
                 } = node;
-                //Todo broken here
+                
                 tokens.extend(quote! {
                     {
                         let child_node = {
