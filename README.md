@@ -32,6 +32,6 @@ let node: Node = rsx!(<test data={"entry"}>
                         
                         
 let click = || println!("{:?}", "data");                        
-let node = rsx!(<test OnClick={ click } OnHover={click} data1={"test"} data2={"test2"}></test>);                        
+let node = rsx!(<test onClick={ click } onHover={click} data1={"test"} data2={"test2"}></test>);                        
 
 ```
