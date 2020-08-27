@@ -1,4 +1,4 @@
-use cig::{rsx, Events, Node};
+use cig::{rsx, Node};
 
 #[test]
 fn parse_children() {
@@ -85,13 +85,4 @@ fn plain_attribute() {
     assert_eq!(*node.get_attribute("data").unwrap(), "entry".to_string());
 }
 
-#[test]
-fn event_handlers() {
-    let click = || println!("{:?}", "data");
-    let node = rsx!(<test onClick={ click } onHover={click} data1={"test"} data2={"test2"}>
-                        <child onClick={click}></child>
-                    </test>);
 
-    assert_eq!(node.events().len(), 2);
-    assert_eq!(node.children[0].events().len(), 1);
-}

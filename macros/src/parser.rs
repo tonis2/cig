@@ -188,16 +188,17 @@ impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         let Attribute { key, value } = self;
         let action: &str = key;
+        //Todo implement events with sync
         match action {
             "onClick" => {
-                tokens.extend(quote! {
-                    node.set_event(Events::OnClick(Box::new(#value)));
-                });
+                // tokens.extend(quote! {
+                //     node.set_event(Events::OnClick(Box::new(#value)));
+                // });
             }
             "onHover" => {
-                tokens.extend(quote! {
-                    node.set_event(Events::OnHover(Box::new(#value)));
-                });
+                // tokens.extend(quote! {
+                //     node.set_event(Events::OnHover(Box::new(#value)));
+                // });
             }
             _ => {
                 tokens.extend(quote! {

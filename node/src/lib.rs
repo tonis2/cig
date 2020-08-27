@@ -1,2 +1,2 @@
 mod node;
-pub use node::{Events, Node};
+pub use node::{Node};

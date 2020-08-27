@@ -2,16 +2,10 @@ use std::collections::HashMap;
 
 pub type EventType = Box<dyn Fn()>;
 
-pub enum Events {
-    OnClick(EventType),
-    OnHover(EventType),
-}
-
 pub struct Node {
     pub tag: String,
     pub children: Vec<Node>,
     attributes: HashMap<String, String>,
-    events: Vec<Events>,
     dirty: bool,
 }
 
@@ -21,7 +15,6 @@ impl Node {
             tag: tag.into(),
             children: Vec::new(),
             attributes: HashMap::new(),
-            events: Vec::new(),
             dirty: false,
         }
     }
@@ -39,13 +32,15 @@ impl Node {
         self.dirty = true;
     }
 
-    pub fn set_event(&mut self, action: Events) {
-        self.events.push(action);
+    pub fn flat(&self) -> Vec<&Node> {
+        let mut children = vec![self];
+        children.extend(self.children.iter().map(|node| node.flat()).flatten());
+        children
     }
 
-    pub fn events(&self) -> &Vec<Events> {
-        &self.events
-    }
+    // pub fn set_event(&mut self, action: Events) {
+    //     events.push(action);
+    // }
 }
 
 impl std::fmt::Debug for Node {

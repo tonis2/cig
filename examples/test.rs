@@ -15,5 +15,7 @@ fn main() {
                                 .collect::<Vec<Node>>()
                             }
                             </container>);
-    println!("{:?}", node);
+    for node in node.flat() {
+        println!("{:?}", node.tag);
+    }
 }
